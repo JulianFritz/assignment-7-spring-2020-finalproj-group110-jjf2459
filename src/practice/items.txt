@@ -1,0 +1,5 @@
+Shoes 20.0
+Shirt 10.0
+Pants 25.0
+Hat 8.0
+Sword 100.0
