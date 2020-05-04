@@ -102,14 +102,25 @@ public class MultiThreadChatServer extends Application
 					});
 				} */
 				while (true) {
-					char waiting = inputFromClient.readChar();
-					
-					int amount = items.size();
-					outputToClient.writeInt(amount);
-
-					for (Item i : items) {
-						oos.writeObject(i);
+					int commandNo = inputFromClient.readInt();
+					switch(commandNo) {
+					case 1: {
+						int amount = items.size();
+						outputToClient.writeInt(amount);
+						for (Item i : items) {
+							oos.writeObject(i.toString());
+						}
+						break;
 					}
+					case 2: {
+						int index = inputFromClient.readInt();
+						double price = inputFromClient.readDouble();
+						if (price > items.get(index).getCurrPrice() && items.get(index).isBiddable() == true)
+							items.get(index).setCurrPrice(price);
+						break;
+					}
+					}
+
 				}
 				
 			} catch(IOException e) {
@@ -121,19 +132,27 @@ public class MultiThreadChatServer extends Application
 	public static void main(String[] args) {
 		try {
 			File f = new File("src/practice/items.txt");
-//System.out.println(f.exists());
 			Scanner sc = new Scanner(f);
 			while (sc.hasNextLine()) {
 				String name = sc.next();
 				double price = sc.nextDouble();
-				items.add(new Item(name, price));
+				int time = sc.nextInt();
+				items.add(new Item(name, price, time));
 			}
 			sc.close();
 		} catch (FileNotFoundException e) {
 			System.out.println("File not found");
 		}
-		//for (Item i : items)
-		//	System.out.println(i);
+		
+		final Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            public void run() {
+                for (Item i : items) {
+                	i.setTimeLeft(i.getTimeLeft() - 1);
+                }
+            }
+        }, 0, 1000);
+
 		
 		launch(args);
 	}

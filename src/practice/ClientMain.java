@@ -40,39 +40,42 @@ class Client {
 			
 			Double msg = 1.0;
 			while(true) {
-				/*try {
-					System.out.print("Enter a number to send to server: ");
-					msg = sc.nextDouble();
-				} catch (Exception e) {
-					sc.next();
-					System.out.println("Try again");
-					continue;
+
+				System.out.print("Enter a command: ");
+				String line = sc.nextLine();
+				String[] command = line.split("\\s+");
+			//System.out.println(line);
+			//System.out.println(command[0]);
+				switch (command[0]) {
+				case "quit": {
+					System.exit(0);
+					break;
 				}
-				
-				out.writeDouble(msg);
-				out.flush();
-				*/
-				try {
-					System.out.println("Would you like to see the items up for bid? (y/n)");
-					String c = sc.next();
-					if (c.equals("y"))
-						out.writeChars(c);
-					else
-						continue;
-				} catch (Exception e) {
-					System.out.println("Try again");
-					continue;
-				}
-				
-				int amount = in.readInt();
-				//System.out.println("Client: The server says the square is: " + in.readDouble());
-				System.out.println("Here are the items up for auction :");
-				for (int i = 0; i < amount; i++) {
-					try {
-						System.out.println(ois.readObject());
-					} catch (ClassNotFoundException e) {
-						System.out.println("Exception!!!");
+				case "show": {
+					out.writeInt(1);
+					int amount = in.readInt();
+					System.out.println("Here are the items up for auction :");
+					for (int i = 0; i < amount; i++) {
+						try {
+							System.out.println(i + ") " + ois.readObject());
+						} catch (ClassNotFoundException e) {
+							System.out.println("ClassNotFound");
+						}
 					}
+					break;
+				}
+				case "bid": {
+					out.writeInt(2);
+					int index = Integer.parseInt(command[1]);
+					out.writeInt(index);
+					double price = Double.parseDouble(command[2]);
+					out.writeDouble(price);
+					break;
+				}
+				default: {
+					System.out.println("Invalid command");
+					break;
+				}
 				}
 				
 			}
