@@ -108,7 +108,9 @@ public class MultiThreadChatServer extends Application
 						int amount = items.size();
 						outputToClient.writeInt(amount);
 						for (Item i : items) {
-							oos.writeObject(i.toString());
+							oos.writeObject(i.getItemName());
+							oos.writeObject(i.getCurrPrice());
+							oos.writeObject(i.getTimeLeft());
 						}
 						break;
 					}

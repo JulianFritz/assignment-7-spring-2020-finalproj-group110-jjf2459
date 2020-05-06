@@ -53,4 +53,12 @@ public class Item implements Serializable {
 		return result;
 	}
 
+	public String getItemName() {
+		return itemName;
+	}
+
+	public void setItemName(String itemName) {
+		this.itemName = itemName;
+	}
+
 }

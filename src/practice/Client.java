@@ -1,35 +1,24 @@
 package practice;
 
-import java.io.*;
-import java.net.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Scanner;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.control.CheckBox;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
-public class ClientMain {
-
-	public static void main(String[] args) {
-		//Client client = new Client();
-		
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				Application.launch(Client.class);
-			}
-		}).start();
-	}
-
-}
-/*
-class Client extends Application {
+public class Client extends Application {
 	int port = 8000;
 	String host = "localhost";
 	DataInputStream in;
@@ -53,22 +42,47 @@ class Client extends Application {
 			
 			//Grid for items
 			GridPane itemGrid = new GridPane();
-			itemGrid.setHgap(10);
+			itemGrid.setHgap(50);
 			itemGrid.setVgap(10);
 			
-			out.writeInt(1);
+			out.writeInt(1);	//command to get the amount and names of items
 			int noOfItems = in.readInt();
 			for (int i = 0; i < noOfItems; i++) {
 				try {
 					Label itemNameLbl = new Label((String) ois.readObject());
-					itemGrid.add(itemNameLbl, 0, i);
+					Label currPriceLbl = new Label("Current Price: " + ((Double) ois.readObject()).toString());
+					Label timeLeftLbl = new Label("Time left for bidding: " + ((Integer) ois.readObject()).toString());
+					
+					TextField priceInput = new TextField();
+					
+					int index = i;
+					Button bidBtn = new Button("Bid");
+					bidBtn.setOnAction(new EventHandler<ActionEvent>() {
+						@Override
+						public void handle(ActionEvent e) {
+							try {
+								out.writeInt(2);	//command number for bid is 2
+								out.writeInt(index);
+								double price = Double.parseDouble(priceInput.getText());
+								out.writeDouble(price);
+							} catch (IOException e1) {
+								e1.printStackTrace();
+							}
+						}
+					});
+					
+					itemGrid.add(itemNameLbl, i, 0);
+					itemGrid.add(currPriceLbl, i, 1);
+					itemGrid.add(timeLeftLbl, i, 2);
+					itemGrid.add(priceInput, i, 3);
+					itemGrid.add(bidBtn, i, 4);
 					
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
 				}
 			}
 			
-			Scene scene = new Scene(itemGrid, 500, 500);
+			Scene scene = new Scene(itemGrid, 1500, 500);
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("Auction Client");
 			primaryStage.show();
@@ -143,4 +157,3 @@ class Client extends Application {
 		}
 	}
 }
-*/
