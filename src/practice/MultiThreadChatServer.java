@@ -5,63 +5,74 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.Date;
+
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.Label;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 
-public class MultiThreadChatServer extends Application
-{ // Text area for displaying contents 
-	private TextArea ta = new TextArea(); 
-	//public Item[] items = {new Item("shoe",20.0), new Item("shirt",10.0), new Item("pants",25.0), new Item("hat",8.0)};
+public class MultiThreadChatServer extends Observable {
+
+//	private TextArea ta = new TextArea(); 
 	public static ArrayList<Item> items = new ArrayList<Item>();	
-	
-	// Number a client 
 	private int clientNo = 0; 
+	
+	public static void main(String[] args) {
+		try {
+			File f = new File("src/practice/items.txt");
+			Scanner sc = new Scanner(f);
+			while (sc.hasNextLine()) {
+				String name = sc.next();
+				double price = sc.nextDouble();
+				int time = sc.nextInt();
+				items.add(new Item(name, price, time));
+			}
+			sc.close();
+		} catch (FileNotFoundException e) {
+			System.out.println("File not found");
+		}
 
-	@Override // Override the start method in the Application class 
-	public void start(Stage primaryStage) { 
-		// Create a scene and place it in the stage 
-		Scene scene = new Scene(new ScrollPane(ta), 450, 200); 
-		primaryStage.setTitle("MultiThreadServer"); // Set the stage title 
-		primaryStage.setScene(scene); // Place the scene in the stage 
-		ta.appendText("Hello, Welcome to the Multithread Server\n");
-		primaryStage.show(); // Display the stage 
+		final Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            public void run() {
+            	for (Item i : items) {
+            		i.setTimeLeft(i.getTimeLeft() - 1);
+            		if (i.getTimeLeft() < 0)
+            			i.setBiddable(false);
+            	}
+            }
+        }, 0, 1000);
+		
+//		launch(args);
+        new MultiThreadChatServer().start();
+	}
+
+	public void start(/*Stage primaryStage*/) { 
 
 		new Thread( () -> { 
 			try {  // Create a server socket 
 				@SuppressWarnings("resource")
 				ServerSocket serverSocket = new ServerSocket(8000); 
-				ta.appendText("MultiThreadServer started at " 
-						+ new Date() + '\n'); 
-
 
 				while (true) { 
 					// Listen for a new connection request 
 					Socket socket = serverSocket.accept(); 
+					
+					clientNo++; // Increment clientNo 
 
-					// Increment clientNo 
-					clientNo++; 
-
-					//Platform.runLater( () -> { 
-						// Display the client number 
-						ta.appendText("Starting thread for client " + clientNo +
-								" at " + new Date() + '\n'); 
-
-						// Find the client's host name, and IP address 
-						InetAddress inetAddress = socket.getInetAddress();
-						ta.appendText("Client " + clientNo + "'s host name is "
-								+ inetAddress.getHostName() + "\n");
-						ta.appendText("Client " + clientNo + "'s IP Address is " 
-								+ inetAddress.getHostAddress() + "\n");	
-						//}); 
-
-
-					// Create and start a new thread for the connection
-					new Thread(new HandleAClient(socket)).start();
+					Client client1 = new Client();
+					
+					new Thread(new HandleAClient(socket)).start();	// Create and start a new thread for the connection
+					this.addObserver(client1);
+					System.out.println("got a client connection");
 				} 
 			} 
 			catch(IOException ex) { 
@@ -85,77 +96,56 @@ public class MultiThreadChatServer extends Application
 				DataInputStream inputFromClient = new DataInputStream( socket.getInputStream());
 				DataOutputStream outputToClient = new DataOutputStream( socket.getOutputStream());
 				ObjectOutputStream oos = new ObjectOutputStream(outputToClient);
-				// Continuously serve the client
+				ObjectInputStream ois = new ObjectInputStream(inputFromClient);
 				
-				/*while (true) { 
-					// Receive radius from the client 
-					double radius = inputFromClient.readDouble();
-
-					// Compute area
-					double area = radius * radius * Math.PI; 
-					// Send area back to the client
-					outputToClient.writeDouble(area);
-					Platform.runLater(() -> { 
-						ta.appendText("radius received from client: " +
-								radius + '\n'); 
-						ta.appendText("Area found: " + area + '\n');
-					});
-				} */
+				int amount = items.size();
+				outputToClient.writeInt(amount);
+				for (Item i : items) {
+					oos.writeObject(i.getItemName());
+					oos.writeObject(i.getCurrPrice());
+					oos.writeObject(i.getTimeLeft());
+				}
+				
+		        
+				// Continuously serve the client
 				while (true) {
 					int commandNo = inputFromClient.readInt();
 					switch(commandNo) {
 					case 1: {
-						int amount = items.size();
-						outputToClient.writeInt(amount);
-						for (Item i : items) {
-							oos.writeObject(i.getItemName());
-							oos.writeObject(i.getCurrPrice());
-							oos.writeObject(i.getTimeLeft());
-						}
+//						int amount = items.size();
+//						outputToClient.writeInt(amount);
+//						for (Item i : items) {
+//							oos.writeObject(i.getItemName());
+//							oos.writeObject(i.getCurrPrice());
+//							oos.writeObject(i.getTimeLeft());
+//						}
 						break;
 					}
 					case 2: {
 						int index = inputFromClient.readInt();
 						double price = inputFromClient.readDouble();
-						if (price > items.get(index).getCurrPrice() && items.get(index).isBiddable() == true)
+						//Label[] arrLab = (Label[]) ois.readObject();
+						if (price > items.get(index).getCurrPrice() && items.get(index).isBiddable() == true) {
 							items.get(index).setCurrPrice(price);
+							setChanged();
+							Object[] objs = new Object[3];
+							objs[0] = index; objs[1] = price; //objs[2] = arrLab;
+	System.out.println("index is " + index);
+							notifyObservers(objs);
+						}
 						break;
 					}
+					
 					}
 
 				}
 				
 			} catch(IOException e) {
 				e.printStackTrace();
-			}
+			} //catch (ClassNotFoundException e) {
+				//e.printStackTrace();
+			//}
 		}
 	}
 	
-	public static void main(String[] args) {
-		try {
-			File f = new File("src/practice/items.txt");
-			Scanner sc = new Scanner(f);
-			while (sc.hasNextLine()) {
-				String name = sc.next();
-				double price = sc.nextDouble();
-				int time = sc.nextInt();
-				items.add(new Item(name, price, time));
-			}
-			sc.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("File not found");
-		}
-		
-		final Timer timer = new Timer();
-        timer.scheduleAtFixedRate(new TimerTask() {
-            public void run() {
-                for (Item i : items) {
-                	i.setTimeLeft(i.getTimeLeft() - 1);
-                }
-            }
-        }, 0, 1000);
-
-		
-		launch(args);
-	}
 }

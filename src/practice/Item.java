@@ -62,3 +62,52 @@ public class Item implements Serializable {
 	}
 
 }
+
+
+//Timeline timer = new Timeline(new KeyFrame(Duration.millis(1000), event -> {
+//int idx = 0;
+//for (Item i : items) {
+//	i.setTimeLeft(i.getTimeLeft() - 1);
+//	if (i.getTimeLeft() < 0)
+//		i.setBiddable(false);
+//	//try {
+//	//	outputToClient.writeInt(1);	//command number for updating time
+//	//	outputToClient.writeInt(idx);
+//	//	outputToClient.writeInt(i.getTimeLeft());
+//	//} catch (IOException e) {}
+//	idx++;
+//}
+//}));
+//timer.setCycleCount(Animation.INDEFINITE);
+
+
+
+
+
+//Platform.runLater( () -> { 
+// Display the client number 
+//ta.appendText("Starting thread for client " + clientNo +
+//		" at " + new Date() + '\n'); 
+//
+//// Find the client's host name, and IP address 
+//InetAddress inetAddress = socket.getInetAddress();
+//ta.appendText("Client " + clientNo + "'s host name is "
+//		+ inetAddress.getHostName() + "\n");
+//ta.appendText("Client " + clientNo + "'s IP Address is " 
+//		+ inetAddress.getHostAddress() + "\n");	
+//}); 
+
+
+
+
+
+// Create a scene and place it in the stage 
+//Scene scene = new Scene(new ScrollPane(ta), 450, 200); 
+//primaryStage.setTitle("MultiThreadServer"); // Set the stage title 
+//primaryStage.setScene(scene); // Place the scene in the stage 
+//ta.appendText("Hello, Welcome to the Multithread Server\n");
+//primaryStage.show(); // Display the stage 
+
+//ta.appendText("MultiThreadServer started at " 
+//+ new Date() + '\n'); 
+
