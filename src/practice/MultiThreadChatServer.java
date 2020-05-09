@@ -24,6 +24,7 @@ public class MultiThreadChatServer extends Observable {
 //	private TextArea ta = new TextArea(); 
 	public static ArrayList<Item> items = new ArrayList<Item>();	
 	private int clientNo = 0; 
+	public static ArrayList<Observer> observers = new ArrayList<Observer>();
 	
 	public static void main(String[] args) {
 		try {
@@ -55,7 +56,7 @@ public class MultiThreadChatServer extends Observable {
         new MultiThreadChatServer().start();
 	}
 
-	public void start(/*Stage primaryStage*/) { 
+	public void start() { 
 
 		new Thread( () -> { 
 			try {  // Create a server socket 
@@ -72,6 +73,7 @@ public class MultiThreadChatServer extends Observable {
 					
 					new Thread(new HandleAClient(socket)).start();	// Create and start a new thread for the connection
 					this.addObserver(client1);
+					observers.add(client1);
 					System.out.println("got a client connection");
 				} 
 			} 
@@ -112,13 +114,10 @@ public class MultiThreadChatServer extends Observable {
 					int commandNo = inputFromClient.readInt();
 					switch(commandNo) {
 					case 1: {
-//						int amount = items.size();
-//						outputToClient.writeInt(amount);
-//						for (Item i : items) {
-//							oos.writeObject(i.getItemName());
-//							oos.writeObject(i.getCurrPrice());
-//							oos.writeObject(i.getTimeLeft());
-//						}
+						for (Item i : items) {
+							outputToClient.writeDouble(i.getCurrPrice());
+							outputToClient.writeInt(i.getTimeLeft());
+						}
 						break;
 					}
 					case 2: {
@@ -127,11 +126,18 @@ public class MultiThreadChatServer extends Observable {
 						//Label[] arrLab = (Label[]) ois.readObject();
 						if (price > items.get(index).getCurrPrice() && items.get(index).isBiddable() == true) {
 							items.get(index).setCurrPrice(price);
-							setChanged();
-							Object[] objs = new Object[3];
-							objs[0] = index; objs[1] = price; //objs[2] = arrLab;
-	System.out.println("index is " + index);
-							notifyObservers(objs);
+//							setChanged();
+//							Object[] objs = new Object[3];
+//							objs[0] = index; objs[1] = price; //objs[2] = arrLab;
+//	System.out.println("index is " + index);
+//							for (Observer o : observers) {
+//								((Client) o).updatee(objs);
+//							}
+							//notifyObservers(objs);
+							
+//							outputToClient.writeInt(2);	//command for setting a new price
+//							outputToClient.writeInt(index);
+//							outputToClient.writeDouble(price);
 						}
 						break;
 					}
