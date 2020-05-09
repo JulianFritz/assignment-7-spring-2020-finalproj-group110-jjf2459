@@ -1,5 +1,5 @@
 /* From Daniel Liang's book */
-package practice;
+package server;
 
 import java.io.*;
 import java.net.*;
@@ -28,7 +28,7 @@ public class MultiThreadChatServer extends Observable {
 	
 	public static void main(String[] args) {
 		try {
-			File f = new File("src/practice/items.txt");
+			File f = new File("assignment7Server/server/items.txt");
 			Scanner sc = new Scanner(f);
 			while (sc.hasNextLine()) {
 				String name = sc.next();
@@ -52,7 +52,6 @@ public class MultiThreadChatServer extends Observable {
             }
         }, 0, 1000);
 		
-//		launch(args);
         new MultiThreadChatServer().start();
 	}
 

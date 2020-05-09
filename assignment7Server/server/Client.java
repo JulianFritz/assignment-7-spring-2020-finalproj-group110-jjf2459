@@ -1,4 +1,4 @@
-package practice;
+package server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -23,7 +23,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import practice.MultiThreadChatServer.HandleAClient;
+import server.MultiThreadChatServer.HandleAClient;
 
 public class Client extends Application implements Observer {
 	int port = 8000;
