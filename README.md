@@ -1,1 +1,1 @@
-# assignment-7-spring-2020-finalproj-group110-jjf2459
+NOTE: I could not find a way to have 2 eclipse projects work in the same github repo, so this repo only has my Server project in it. I added a copy of my Client project's files (Client.java and ClientMain.java) so that this repo still has the updates I made to those files. My server and client run perfectly from separate projects, they do not rely on any communication other than Sockets.
