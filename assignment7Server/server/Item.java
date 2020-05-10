@@ -1,3 +1,12 @@
+/*  
+ * EE422C Final Project submission by
+ * Replace <...> with your actual data.
+ * Julian Fritz
+ * jjf2459
+ * 16300
+ * Spring 2020
+ */
+
 package server;
 
 import java.io.*;
