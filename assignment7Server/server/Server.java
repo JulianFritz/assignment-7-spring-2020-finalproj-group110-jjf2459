@@ -19,12 +19,12 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 
-public class MultiThreadChatServer extends Observable {
+public class Server extends Observable {
 
 //	private TextArea ta = new TextArea(); 
 	public static ArrayList<Item> items = new ArrayList<Item>();	
 	private int clientNo = 0; 
-	public static ArrayList<Observer> observers = new ArrayList<Observer>();
+	public static ArrayList<String> customers = new ArrayList<String>();
 	
 	public static void main(String[] args) {
 		try {
@@ -52,7 +52,7 @@ public class MultiThreadChatServer extends Observable {
             }
         }, 0, 1000);
 		
-        new MultiThreadChatServer().start();
+        new Server().start();
 	}
 
 	public void start() { 
@@ -72,7 +72,7 @@ public class MultiThreadChatServer extends Observable {
 					
 					new Thread(new HandleAClient(socket)).start();	// Create and start a new thread for the connection
 					this.addObserver(client1);
-					observers.add(client1);
+					//observers.add(client1);
 					System.out.println("got a client connection");
 				} 
 			} 
@@ -86,6 +86,9 @@ public class MultiThreadChatServer extends Observable {
 	// Define the thread class for handling
 	class HandleAClient implements Runnable {
 		private Socket socket; // A connected socket
+		public String username;
+		public Object lock = new Object();
+		
 		/** Construct a thread */ 
 		public HandleAClient(Socket socket) { 
 			this.socket = socket;
@@ -112,32 +115,36 @@ public class MultiThreadChatServer extends Observable {
 				while (true) {
 					int commandNo = inputFromClient.readInt();
 					switch(commandNo) {
-					case 1: {
+					case 1: {	//update labels command
 						for (Item i : items) {
 							outputToClient.writeDouble(i.getCurrPrice());
 							outputToClient.writeInt(i.getTimeLeft());
+							oos.writeObject(i.getHighestBidder());
 						}
 						break;
 					}
-					case 2: {
+					case 2: {	//new bid command
 						int index = inputFromClient.readInt();
 						double price = inputFromClient.readDouble();
-						//Label[] arrLab = (Label[]) ois.readObject();
+						String user = (String) ois.readObject();
+						if (price == -1.0)	//means there was an error
+							break;
 						if (price > items.get(index).getCurrPrice() && items.get(index).isBiddable() == true) {
 							items.get(index).setCurrPrice(price);
-//							setChanged();
-//							Object[] objs = new Object[3];
-//							objs[0] = index; objs[1] = price; //objs[2] = arrLab;
-//	System.out.println("index is " + index);
-//							for (Observer o : observers) {
-//								((Client) o).updatee(objs);
-//							}
-							//notifyObservers(objs);
+							items.get(index).setHighestBidder(user);
 							
-//							outputToClient.writeInt(2);	//command for setting a new price
-//							outputToClient.writeInt(index);
-//							outputToClient.writeDouble(price);
+//							outputToClient.writeInt(10); 	//10 indicates success
+							
+//						} else if (price <= items.get(index).getCurrPrice()) {
+//							outputToClient.writeInt(-1);	//-1 means bid was too low
+//						} else if (items.get(index).isBiddable() == false) {
+//							outputToClient.writeInt(-2);	//-2 means the bidding has ended
 						}
+						break;
+					}
+					case 3: {	//login command
+						username = (String) ois.readObject();
+						customers.add(username);
 						break;
 					}
 					
@@ -147,9 +154,9 @@ public class MultiThreadChatServer extends Observable {
 				
 			} catch(IOException e) {
 				e.printStackTrace();
-			} //catch (ClassNotFoundException e) {
-				//e.printStackTrace();
-			//}
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

@@ -1,4 +1,4 @@
-package server;
+package client;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -19,11 +19,12 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import server.MultiThreadChatServer.HandleAClient;
 
 public class Client extends Application implements Observer {
 	int port = 8000;
@@ -31,8 +32,14 @@ public class Client extends Application implements Observer {
 	public DataInputStream in;
 	public DataOutputStream out;
 	Socket socket;
-	public Label[] priceLbls = new Label[5];
-	public Label[] timeLbls = new Label[5];
+	public Label[] priceLbls;
+	public Label[] timeLbls;
+	public Label[] highBidLbls;
+	public Label[] errorLbls;
+	public double[] prices;
+	public int[] times;
+	String username;
+	Object lock = new Object();
 	
 	
 	//public static void main(String[] args) {
@@ -61,15 +68,23 @@ public class Client extends Application implements Observer {
 			
 			priceLbls = new Label[noOfItems];
 			timeLbls = new Label[noOfItems];
+			highBidLbls = new Label[noOfItems];
+			errorLbls = new Label[noOfItems];
+			prices = new double[noOfItems];
+			times = new int[noOfItems];
 			
 			for (int i = 0; i < noOfItems; i++) {
 				try {
 					Label itemNameLbl = new Label((String) ois.readObject());
 					Label currPriceLbl = new Label("Current Price: " + ((Double) ois.readObject()).toString());
 					Label timeLeftLbl = new Label("Time left for bidding: " + ((Integer) ois.readObject()).toString());
-
+					Label highBidLbl = new Label("Highest Bidder: <none>");
+					Label errorLbl = new Label("");
+					
 					priceLbls[i] = currPriceLbl;
 					timeLbls[i] = timeLeftLbl;
+					highBidLbls[i] = highBidLbl;
+					errorLbls[i] = errorLbl;
 	System.out.println("Added pricelabel " + i);
 	//System.out.println(priceLbls[i]);
 
@@ -85,12 +100,36 @@ public class Client extends Application implements Observer {
 								out.writeInt(2);	//command number for bid is 2
 								out.writeInt(index);
 								double price = Double.parseDouble(priceInput.getText());
+								price = Math.floor(price*100) / 100;
 								out.writeDouble(price);
+								oos.writeObject(username);
 
-								//setLabel(index, price);
+								priceInput.clear();
+								
+								if (price <= prices[index]) {
+									errorLbl.setText("Your bid must be greater");
+								}
+								
+								if (times[index] < 0) {
+									errorLbl.setText("This item has been sold");
+								}
+
+//								double code = ois.readDouble();
+//								if (code == -1)
+//									errorLbl.setText("Bid value too small");
+//								if (code == -2)
+//									errorLbl.setText("Bidding has ended for this item");
 								
 							} catch (IOException e1) {
 								e1.printStackTrace();
+							} catch (NumberFormatException e1) {
+								System.out.println("try again, invalid price");
+								try {
+									out.writeDouble(-1.0);	//tells the server it was an invalid price
+									oos.writeObject(username);
+									errorLbl.setText("Please enter a valid number");
+									priceInput.clear();
+								} catch (IOException e2) {}
 							}
 						}
 					});
@@ -113,9 +152,11 @@ public class Client extends Application implements Observer {
 
 					itemGrid.add(itemNameLbl, i, 0);
 					itemGrid.add(currPriceLbl, i, 1);
-					itemGrid.add(timeLeftLbl, i, 2);
-					itemGrid.add(priceInput, i, 3);
-					itemGrid.add(bidBtn, i, 4);
+					itemGrid.add(highBidLbl, i, 2);
+					itemGrid.add(timeLeftLbl, i, 3);
+					itemGrid.add(priceInput, i, 4);
+					itemGrid.add(bidBtn, i, 5);
+					itemGrid.add(errorLbl, i, 6);
 					//if (i==0)
 						//itemGrid.add(updateBtn, i, 5);
 
@@ -124,7 +165,65 @@ public class Client extends Application implements Observer {
 				}
 			}
 
-			Scene scene = new Scene(itemGrid, 1500, 300);
+			//quit button
+			Button quitBtn = new Button("Log out");
+			quitBtn.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent e) {
+					System.exit(0);
+				}
+			});
+			itemGrid.add(quitBtn, 0, 8);
+			Button quitBtn2 = new Button("Quit");
+			quitBtn2.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent e) {
+					System.exit(0);
+				}
+			});
+			
+			//Login Screen
+			GridPane loginGrid = new GridPane();
+			loginGrid.setHgap(50);
+			loginGrid.setVgap(50);
+			
+			TextField usernameTF = new TextField();
+			
+			Button loginBtn = new Button("Log In");
+			
+			loginGrid.add(usernameTF, 0, 0);
+			loginGrid.add(loginBtn, 1, 0);
+			loginGrid.add(quitBtn2, 0, 4);
+			
+			
+			Tab login = new Tab("Login");
+			login.setContent(loginGrid);
+			login.setClosable(true);
+			
+			Tab auction = new Tab("Auction");
+			auction.setContent(itemGrid);
+			auction.setClosable(false);
+			auction.setDisable(true);
+			
+			loginBtn.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent e) {
+					try {
+						out.writeInt(3);	//command for giving username
+						oos.writeObject(usernameTF.getText());
+					} catch (IOException e1) {}
+					username = usernameTF.getText();
+					auction.setDisable(false);
+					login.setDisable(true);
+				}
+			});
+			
+			TabPane tabs = new TabPane();
+			tabs.getTabs().add(login);
+			tabs.getTabs().add(auction);
+			
+			
+			Scene scene = new Scene(tabs, 1500, 350);
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("Auction Client");
 			primaryStage.show();
@@ -133,9 +232,17 @@ public class Client extends Application implements Observer {
 				try {
 					out.writeInt(1);	//command number for refresh is 1
 					for (int i = 0; i < noOfItems; i++) {
-						setBothLabel(i, in.readDouble(), in.readInt());
+						double price = in.readDouble();
+						int time = in.readInt();
+						String bidder = (String)ois.readObject();
+						setLabels(i, price, time, bidder);
+						
+						prices[i] = price;
+						times[i] = time;
 					}
 				} catch (IOException e1) {
+					e1.printStackTrace();
+				} catch (ClassNotFoundException e1) {
 					e1.printStackTrace();
 				}				
 			}));
@@ -197,15 +304,26 @@ public class Client extends Application implements Observer {
 		priceLbls[index].setText("Current Price: " + price);
 	}
 	
-	public void setBothLabel(int index, double price, int time) {
+	public void setLabels(int index, double price, int time, String user) {
 		if (time >= 0) {
 			timeLbls[index].setText("Time left for bidding: " + time);
 			priceLbls[index].setText("Current Price: " + price);
+			highBidLbls[index].setText("Highest Bidder: " + user);
 		}
 		else {
 			timeLbls[index].setText("Bidding has ended  " + time);
-			priceLbls[index].setText("Sold for: " + price);
+			priceLbls[index].setText("Sold for: " + price + " to " + user);
+			highBidLbls[index].setText("Highest Bidder: " + user);
 		}
+		if (!(errorLbls[index].getText().equals(""))) { //"if the error label is not empty"
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+
+			}
+			errorLbls[index].setText("");
+		}
+		
 	}
 
 	//@Override

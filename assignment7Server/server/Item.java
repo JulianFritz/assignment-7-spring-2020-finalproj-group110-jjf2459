@@ -3,18 +3,26 @@ package server;
 import java.io.*;
 
 public class Item implements Serializable {
-	private double startPrice;
 	private double currPrice;
 	private String itemName;
 	private int timeLeft;
 	private boolean biddable;
+	private String highestBidder;
 	
 	public Item (String itemName, double startPrice, int timeLeft) {
 		this.itemName = itemName;
-		this.startPrice = startPrice;
 		this.currPrice = startPrice;
 		this.timeLeft = timeLeft;
 		biddable = true;
+		highestBidder = "<none>";
+	}
+
+	public String getHighestBidder() {
+		return highestBidder;
+	}
+
+	public void setHighestBidder(String highestBidder) {
+		this.highestBidder = highestBidder;
 	}
 
 	public boolean isBiddable() {
@@ -41,17 +49,17 @@ public class Item implements Serializable {
 		this.timeLeft = timeLeft;
 	}
 
-	@Override
-	public String toString() {
-		String result = null;
-		if (timeLeft >= 0) {
-			result = itemName + " currently at $" + currPrice + " with " + timeLeft + " seconds left";
-		}
-		else {
-			result = itemName + " was sold for $" + currPrice;
-		}
-		return result;
-	}
+//	@Override
+//	public String toString() {
+//		String result = null;
+//		if (timeLeft >= 0) {
+//			result = itemName + " currently at $" + currPrice + " with " + timeLeft + " seconds left";
+//		}
+//		else {
+//			result = itemName + " was sold for $" + currPrice;
+//		}
+//		return result;
+//	}
 
 	public String getItemName() {
 		return itemName;
