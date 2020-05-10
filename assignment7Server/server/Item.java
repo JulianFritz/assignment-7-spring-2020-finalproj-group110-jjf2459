@@ -119,3 +119,39 @@ public class Item implements Serializable {
 //ta.appendText("MultiThreadServer started at " 
 //+ new Date() + '\n'); 
 
+
+
+//Button updateBtn = new Button("Refresh");
+//updateBtn.setOnAction(new EventHandler<ActionEvent>() {
+//	@Override
+//	public void handle(ActionEvent e) {
+//		try {
+//			out.writeInt(1);	//command number for refresh is 1
+//			for (int i = 0; i < noOfItems; i++) {
+//				setBothLabel(i, in.readDouble(), in.readInt());
+//			}
+//			
+//		} catch (IOException e1) {
+//			e1.printStackTrace();
+//		}
+//	}
+//});
+
+
+
+//final Timer timer = new Timer();
+//timer.scheduleAtFixedRate(new TimerTask() {
+//    public void run() {
+//    	try {
+//			out.writeInt(1);	//command number for refresh is 1
+//			for (int i = 0; i < noOfItems; i++) {
+//				setBothLabel(i, in.readDouble(), in.readInt());
+//			}
+//			
+//		} catch (IOException e1) {
+//			e1.printStackTrace();
+//		}
+//    }
+//}, 0, 100);
+
+

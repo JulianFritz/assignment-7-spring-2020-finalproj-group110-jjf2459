@@ -1,5 +1,5 @@
-Shoes 20.0 1000
-Shirt 10.0 1000
-Pants 25.0 1000
-Hat 8.0 500
-Sword 100.0 15
+MacBookAir 295 1000
+iPad4thGen 98 1000
+HPOfficeJet 155.50 1000
+CanonEOS 175 500
+ShirasayaSword 49.99 150
