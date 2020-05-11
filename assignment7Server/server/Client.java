@@ -27,6 +27,7 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
@@ -199,13 +200,19 @@ public class Client extends Application {
 			loginGrid.add(loginBtn, 1, 0);
 			loginGrid.add(quitBtn2, 0, 4);
 			
+			//Make the Auction scrollable
+			ScrollPane scroll = new ScrollPane();
+			scroll.setPrefSize(500, 500);
+			scroll.setContent(itemGrid);
+			scroll.setPannable(true);
+			
 			//Create tabs
 			Tab login = new Tab("Login");
 			login.setContent(loginGrid);
 			login.setClosable(true);
 			
 			Tab auction = new Tab("Auction");
-			auction.setContent(itemGrid);
+			auction.setContent(scroll);
 			auction.setClosable(false);
 			auction.setDisable(true);	//starts disabled so that you have to login first
 			

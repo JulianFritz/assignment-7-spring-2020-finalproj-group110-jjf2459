@@ -3,3 +3,8 @@ iPad4thGen 98 1000
 HPOfficeJet 155.50 1000
 CanonEOS 175 500
 ShirasayaSword 49.99 150
+MacBookAir 295 1000
+iPad4thGen 98 1000
+HPOfficeJet 155.50 1000
+CanonEOS 175 500
+ShirasayaSword 49.99 150
